@@ -15,35 +15,59 @@ public class ExplodableVisuals : MonoBehaviour
     [SerializeField] private Transform _normalStateTransform;
     [SerializeField] private Transform _flashStateTransform;
     [SerializeField] private bool _startingVisualState;
+
+    [SerializeField] private AudioSource _audioSourcePrefab;
+
     private bool _currentVisualState;
 
     private float _timeTillColorChange;
 
     private bool IsIntenseFlashingStage => _explodable.CountdownTimeLeft / _explodable.TotalCountdownTime <= _intenseBlinkingSwitchPercentage;
+    private bool IsColorChangeTimerUp => _timeTillColorChange <= 0f;
 
     private void Awake()
     {
-        _currentVisualState = _startingVisualState;
+        ChangeCurrentVisualStateTo(_startingVisualState);
+    }
 
-        _normalStateTransform.gameObject.SetActive(_currentVisualState);
-        _flashStateTransform.gameObject.SetActive(_currentVisualState == false);
+    private void Start()
+    {
+        _explodable.Exploded += Explodable_OnExploded;
+    }
+
+    private void Explodable_OnExploded()
+    {
+        Instantiate(_audioSourcePrefab);
     }
 
     private void Update()
     {
         if (_explodable.IsCountdownTriggered)
+            ProcessColorChange();
+    }
+
+    private void ProcessColorChange()
+    {
+        _timeTillColorChange -= Time.deltaTime;
+
+        if (IsColorChangeTimerUp)
         {
-            _timeTillColorChange -= Time.deltaTime;
+            ChangeCurrentVisualStateTo(!_currentVisualState);
 
-            if (_timeTillColorChange <= 0f)
-            {
-                _currentVisualState = !_currentVisualState;
-
-                _normalStateTransform.gameObject.SetActive(_currentVisualState);
-                _flashStateTransform.gameObject.SetActive(_currentVisualState == false);
-
-                _timeTillColorChange = IsIntenseFlashingStage ? _intenseFlashingInterval : _normalFlashingInterval;
-            }
+            _timeTillColorChange = IsIntenseFlashingStage ? _intenseFlashingInterval : _normalFlashingInterval;
         }
+    }
+
+    private void ChangeCurrentVisualStateTo(bool newState)
+    {
+        _currentVisualState = newState;
+
+        UpdateVisuals();
+    }
+
+    private void UpdateVisuals()
+    {
+        _normalStateTransform.gameObject.SetActive(_currentVisualState);
+        _flashStateTransform.gameObject.SetActive(_currentVisualState == false);
     }
 }

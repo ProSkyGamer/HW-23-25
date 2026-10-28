@@ -9,7 +9,7 @@ namespace Health
 {
     public class HealthComponent : MonoBehaviour, IHaveHealth
     {
-        public event Action Hit;
+        public event Action<float> ValueChanged;
         public event Action Dead;
 
         // Там конечно сказано в задании, что можно из логики вызывать,
@@ -43,7 +43,7 @@ namespace Health
             if (Current <= 0f)
                 Die();
             else
-                Hit?.Invoke();
+                ValueChanged?.Invoke(-damage);
         }
 
         private void Die()
@@ -58,6 +58,8 @@ namespace Health
 
             Current += heal;
             Current = GetNormalizedHealth(Current);
+
+            ValueChanged?.Invoke(heal);
         }
 
         private float GetNormalizedHealth(float health)

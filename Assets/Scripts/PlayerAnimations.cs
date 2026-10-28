@@ -22,13 +22,14 @@ namespace DefaultNamespace
 
         private void Start()
         {
-            _healthComponent.Hit += HealthComponent_OnHit;
+            _healthComponent.ValueChanged += HealthComponentOnValueChanged;
             _healthComponent.Dead += HealthComponent_OnDead;
         }
 
-        private void HealthComponent_OnHit()
+        private void HealthComponentOnValueChanged(float valueChange)
         {
-            _animator.SetTrigger(_hitKey);
+            if (valueChange < 0)
+                _animator.SetTrigger(_hitKey);
 
             float healthPercentage = _healthComponent.Current / _healthComponent.Max;
             bool isHurtAnimations = healthPercentage <= _healthPercentageToHitAnimations;

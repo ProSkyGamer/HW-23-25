@@ -1,5 +1,7 @@
 #region
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,6 +10,8 @@ using UnityEngine;
 
 public class Explodable : MonoBehaviour
 {
+    public event Action Exploded;
+
     [SerializeField] private float _range;
     [SerializeField] private float _damage;
     [SerializeField] private LayerMask _layerMask;
@@ -15,61 +19,64 @@ public class Explodable : MonoBehaviour
     [SerializeField] private float _explosionCountdown;
     private readonly Collider[] _activationColliders = new Collider[1];
 
-    private bool IsExplosionCountdownUp => CountdownTimeLeft <= 0f;
-
     public bool IsCountdownTriggered { get; private set; }
 
     public float TotalCountdownTime => _explosionCountdown;
     public float CountdownTimeLeft { get; private set; }
 
-    private void Update()
+    private void Awake()
     {
-        if (IsCountdownTriggered == false)
-        {
-            if (TryTriggerCountdown())
-                TriggerExplosionCountdown();
-        }
-        else
-        {
-            ProcessCountdown();
-        }
+        StartCoroutine(ProcessLifeCycle(_range, _layerMask, _explosionCountdown, _range, _layerMask));
     }
 
-    private bool TryTriggerCountdown()
+    private IEnumerator ProcessLifeCycle(float activationRange, LayerMask activationLayerMask, float explosionCountdown,
+        float explosionRange, LayerMask explosionLayerMask)
     {
-        Physics.OverlapSphereNonAlloc(transform.position, _range, _activationColliders, _layerMask);
+        yield return StartCoroutine(ProcessTrigger(activationRange, activationLayerMask));
 
-        foreach (Collider activationCollider in _activationColliders)
-        {
-            if (activationCollider != null)
-                return true;
-        }
+        yield return StartCoroutine(ProcessCountdown(explosionCountdown));
 
-        return false;
-    }
+        Explode(explosionRange, explosionLayerMask);
 
-    private void TriggerExplosionCountdown()
-    {
-        IsCountdownTriggered = true;
-
-        CountdownTimeLeft = _explosionCountdown;
-    }
-
-    private void ProcessCountdown()
-    {
-        CountdownTimeLeft -= Time.deltaTime;
-
-        if (IsExplosionCountdownUp)
-            Explode();
-    }
-
-    private void Explode()
-    {
-        List<IHaveHealth> allDamagables = GetDamageableObjectIn(_range);
-
-        DealDamageTo(allDamagables);
+        Exploded?.Invoke();
 
         Destroy(gameObject);
+    }
+
+    private IEnumerator ProcessTrigger(float triggerRange, LayerMask layerMask)
+    {
+        while (true)
+        {
+            Physics.OverlapSphereNonAlloc(transform.position, triggerRange, _activationColliders, layerMask);
+
+            foreach (Collider activationCollider in _activationColliders)
+            {
+                if (activationCollider != null)
+                    yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    private IEnumerator ProcessCountdown(float countdown)
+    {
+        IsCountdownTriggered = true;
+        CountdownTimeLeft = countdown;
+
+        while (CountdownTimeLeft > 0)
+        {
+            CountdownTimeLeft -= Time.deltaTime;
+
+            yield return null;
+        }
+    }
+
+    private void Explode(float explosionRange, LayerMask damagingLayers)
+    {
+        List<IHaveHealth> allDamagables = GetDamageableObjectIn(explosionRange, damagingLayers);
+
+        DealDamageTo(allDamagables);
     }
 
     private void DealDamageTo(List<IHaveHealth> allDamagables)
@@ -80,9 +87,9 @@ public class Explodable : MonoBehaviour
         }
     }
 
-    private List<IHaveHealth> GetDamageableObjectIn(float range)
+    private List<IHaveHealth> GetDamageableObjectIn(float range, LayerMask damagingLayers)
     {
-        return Physics.SphereCastAll(transform.position, range, Vector3.down, range, _layerMask)
+        return Physics.SphereCastAll(transform.position, range, Vector3.down, range, damagingLayers)
             .Select(cast => cast.transform.GetComponent<IHaveHealth>()).Where(health => health != null).ToList();
     }
 }

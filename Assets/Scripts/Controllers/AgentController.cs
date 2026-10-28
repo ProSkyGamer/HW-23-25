@@ -1,7 +1,6 @@
 ﻿#region
 
 using UnityEngine;
-using UnityEngine.AI;
 
 #endregion
 
@@ -35,8 +34,10 @@ namespace Controllers
         {
             if (IsFollowInputPressed)
                 ProcessPlayerInput();
-            else
-                ProcessRandomDirectionInput(deltaTime);
+            else if (_agentCharacter.IsRunning == false && _switchModeTimer < _switchModeTime)
+                _switchModeTimer += deltaTime;
+            else if (_agentCharacter.IsRunning == false && _switchModeTimer >= _switchModeTime)
+                SetRandomDestination();
         }
 
         private void ProcessPlayerInput()
@@ -53,24 +54,9 @@ namespace Controllers
             _switchModeTimer = 0f;
         }
 
-        private void ProcessRandomDirectionInput(float deltaTime)
+        private void SetRandomDestination()
         {
-            _switchModeTimer += deltaTime;
-
-            if (_switchModeTimer >= _switchModeTime && _agentCharacter.IsRunning == false)
-                _agentCharacter.SetDestination(RandomNavmeshLocation(_searchRadius));
-        }
-
-        private Vector3 RandomNavmeshLocation(float radius)
-        {
-            Vector3 randomDirection = Random.insideUnitSphere * radius;
-            randomDirection += _agentCharacter.transform.position;
-            Vector3 finalPosition = Vector3.zero;
-
-            if (NavMesh.SamplePosition(randomDirection, out NavMeshHit hit, radius, 1))
-                finalPosition = hit.position;
-
-            return finalPosition;
+            _agentCharacter.SetDestination(NavMeshHelper.GetRandomLocation(_agentCharacter.transform.position, _searchRadius));
         }
     }
 }
