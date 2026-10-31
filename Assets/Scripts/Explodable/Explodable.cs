@@ -1,17 +1,15 @@
 #region
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DefaultNamespace.Health;
 using UnityEngine;
 
 #endregion
 
 public class Explodable : MonoBehaviour
 {
-    public event Action Exploded;
-
     [SerializeField] private float _range;
     [SerializeField] private float _damage;
     [SerializeField] private LayerMask _layerMask;
@@ -37,8 +35,6 @@ public class Explodable : MonoBehaviour
         yield return StartCoroutine(ProcessCountdown(explosionCountdown));
 
         Explode(explosionRange, explosionLayerMask);
-
-        Exploded?.Invoke();
 
         Destroy(gameObject);
     }
@@ -74,22 +70,22 @@ public class Explodable : MonoBehaviour
 
     private void Explode(float explosionRange, LayerMask damagingLayers)
     {
-        List<IHaveHealth> allDamagables = GetDamageableObjectIn(explosionRange, damagingLayers);
+        List<ITakeDamage> allDamagables = GetDamageableObjectIn(explosionRange, damagingLayers);
 
         DealDamageTo(allDamagables);
     }
 
-    private void DealDamageTo(List<IHaveHealth> allDamagables)
+    private void DealDamageTo(List<ITakeDamage> allDamagables)
     {
-        foreach (IHaveHealth damageable in allDamagables)
+        foreach (ITakeDamage damageable in allDamagables)
         {
             damageable.TakeDamage(_damage);
         }
     }
 
-    private List<IHaveHealth> GetDamageableObjectIn(float range, LayerMask damagingLayers)
+    private List<ITakeDamage> GetDamageableObjectIn(float range, LayerMask damagingLayers)
     {
-        return Physics.SphereCastAll(transform.position, range, Vector3.down, range, damagingLayers)
-            .Select(cast => cast.transform.GetComponent<IHaveHealth>()).Where(health => health != null).ToList();
+        return Physics.OverlapSphere(transform.position, range, damagingLayers)
+            .Select(cast => cast.transform.GetComponent<ITakeDamage>()).Where(health => health != null).ToList();
     }
 }

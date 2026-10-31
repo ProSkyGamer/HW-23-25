@@ -4,6 +4,8 @@
     {
         public bool IsActive { get; private set; }
 
+        public float Downtime { get; private set; }
+
         public virtual void Enable()
         {
             IsActive = true;
@@ -19,9 +21,16 @@
             if (IsActive == false)
                 return;
 
+            Downtime += deltaTime;
+
             UpdateInternal(deltaTime);
         }
 
         protected abstract void UpdateInternal(float deltaTime);
+
+        protected void ResetDowntime()
+        {
+            Downtime = 0;
+        }
     }
 }

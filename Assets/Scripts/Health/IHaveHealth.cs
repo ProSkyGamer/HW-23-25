@@ -1,8 +1,14 @@
+#region
+
+using System;
+
+#endregion
+
 public interface IHaveHealth
 {
-    public float Current { get; }
-    public float Max { get; }
+    public event Action<float, float> HealthChanged;
+    public event Action HealthExhausted;
 
-    public void TakeDamage(float damage);
-    public void Heal(float heal);
+    public float CurrentHealth { get; }
+    public float MaxHealth { get; }
 }

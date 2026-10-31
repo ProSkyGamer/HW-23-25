@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Collections;
+using DefaultNamespace.Health;
 using UnityEngine;
 
 #endregion
@@ -9,7 +10,7 @@ public class MedKitInteractable : MonoBehaviour
 {
     private class TriggerResult
     {
-        public IHaveHealth TriggeredObject;
+        public ICanHeal TriggeredObject;
     }
 
     [SerializeField] private float _healAmount;
@@ -56,7 +57,7 @@ public class MedKitInteractable : MonoBehaviour
 
             foreach (Collider activationCollider in _activationColliders)
             {
-                if (activationCollider != null && activationCollider.transform.TryGetComponent(out IHaveHealth health))
+                if (activationCollider != null && activationCollider.transform.TryGetComponent(out ICanHeal health))
                 {
                     triggerResult.TriggeredObject = health;
 
@@ -68,7 +69,7 @@ public class MedKitInteractable : MonoBehaviour
         }
     }
 
-    private void HealObject(IHaveHealth healingObject, float healAmount)
+    private void HealObject(ICanHeal healingObject, float healAmount)
     {
         healingObject.Heal(healAmount);
     }

@@ -1,29 +1,22 @@
 ﻿#region
 
+using Controllers;
 using UnityEngine;
 
 #endregion
 
-public class MedKitsSpawnerController : MonoBehaviour
+public class MedKitsSpawnerController : Controller
 {
-    [SerializeField] private float _spawnInterval;
-    [SerializeField] private float _spawnRange;
-    [SerializeField] private float _healAmount;
-    [SerializeField] private Transform _spawnAroundTarget;
-    [SerializeField] private MedKitInteractable _medKitPrefab;
-
-    private MedKitSpawner _medKitSpawner;
+    private readonly MedKitSpawner _medKitSpawner;
 
     private const KeyCode SwitchStateKeyCode = KeyCode.F;
 
-    private void Awake()
+    public MedKitsSpawnerController(MedKitSpawner medKitSpawner)
     {
-        _medKitSpawner = new MedKitSpawner(_spawnInterval, _spawnRange, _healAmount, _spawnAroundTarget, _medKitPrefab, this);
-
-        _medKitSpawner.Enable();
+        _medKitSpawner = medKitSpawner;
     }
 
-    private void Update()
+    protected override void UpdateInternal(float deltaTime)
     {
         if (Input.GetKeyDown(SwitchStateKeyCode))
             if (_medKitSpawner.IsActive)

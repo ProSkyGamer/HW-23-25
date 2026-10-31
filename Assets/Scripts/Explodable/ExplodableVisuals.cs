@@ -15,9 +15,6 @@ public class ExplodableVisuals : MonoBehaviour
     [SerializeField] private Transform _normalStateTransform;
     [SerializeField] private Transform _flashStateTransform;
     [SerializeField] private bool _startingVisualState;
-
-    [SerializeField] private AudioSource _audioSourcePrefab;
-
     private bool _currentVisualState;
 
     private float _timeTillColorChange;
@@ -28,16 +25,6 @@ public class ExplodableVisuals : MonoBehaviour
     private void Awake()
     {
         ChangeCurrentVisualStateTo(_startingVisualState);
-    }
-
-    private void Start()
-    {
-        _explodable.Exploded += Explodable_OnExploded;
-    }
-
-    private void Explodable_OnExploded()
-    {
-        Instantiate(_audioSourcePrefab);
     }
 
     private void Update()

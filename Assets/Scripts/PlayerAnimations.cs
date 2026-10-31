@@ -1,7 +1,6 @@
 ﻿#region
 
 using Controllers;
-using Health;
 using UnityEngine;
 
 #endregion
@@ -17,26 +16,25 @@ namespace DefaultNamespace
 
         [SerializeField] private Animator _animator;
         [SerializeField] private AgentCharacter _agent;
-        [SerializeField] private HealthComponent _healthComponent;
         [Range(0f, 1f)] [SerializeField] private float _healthPercentageToHitAnimations;
 
         private void Start()
         {
-            _healthComponent.ValueChanged += HealthComponentOnValueChanged;
-            _healthComponent.Dead += HealthComponent_OnDead;
+            _agent.HealthChanged += OnAgentHealthChanged;
+            _agent.HealthExhausted += OnAgentHealthExhausted;
         }
 
-        private void HealthComponentOnValueChanged(float valueChange)
+        private void OnAgentHealthChanged(float previousHealth, float newHealth)
         {
-            if (valueChange < 0)
+            if (newHealth < previousHealth)
                 _animator.SetTrigger(_hitKey);
 
-            float healthPercentage = _healthComponent.Current / _healthComponent.Max;
+            float healthPercentage = _agent.CurrentHealth / _agent.MaxHealth;
             bool isHurtAnimations = healthPercentage <= _healthPercentageToHitAnimations;
             _animator.SetBool(_hurtKey, isHurtAnimations);
         }
 
-        private void HealthComponent_OnDead()
+        private void OnAgentHealthExhausted()
         {
             _animator.SetTrigger(_deadKey);
             Debug.Log("Dead");
@@ -44,7 +42,13 @@ namespace DefaultNamespace
 
         private void Update()
         {
-            _animator.SetBool(_runningKey, _agent.IsRunning);
+            _animator.SetBool(_runningKey, _agent.IsMoving);
+        }
+
+        private void OnDestroy()
+        {
+            _agent.HealthChanged -= OnAgentHealthChanged;
+            _agent.HealthExhausted -= OnAgentHealthExhausted;
         }
     }
 }

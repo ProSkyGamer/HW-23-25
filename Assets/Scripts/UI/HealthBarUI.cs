@@ -1,6 +1,6 @@
 #region
 
-using Health;
+using Controllers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 public class HealthBarUI : MonoBehaviour
 {
-    [SerializeField] private HealthComponent _healthComponent;
+    [SerializeField] private AgentCharacter _agentCharacter;
 
     [SerializeField] private Slider _slider;
 
@@ -18,10 +18,10 @@ public class HealthBarUI : MonoBehaviour
 
     private void Update()
     {
-        float healthPercentage = _healthComponent.Current / _healthComponent.Max;
+        float healthPercentage = _agentCharacter.CurrentHealth / _agentCharacter.MaxHealth;
 
         _slider.value = healthPercentage;
 
-        _healthText.text = string.Format(HealthFormat, _healthComponent.Current, _healthComponent.Max);
+        _healthText.text = string.Format(HealthFormat, _agentCharacter.CurrentHealth, _agentCharacter.MaxHealth);
     }
 }
