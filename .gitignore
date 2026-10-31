@@ -35,11 +35,3 @@ sysinfo.txt
 *.unitypackage
 *.app
 crashlytics-build.properties
-/Assets/AddressableAssetsData/*/*.bin*
-/Assets/StreamingAssets/aa.meta
-/Assets/StreamingAssets/aa/*
-.idea/.idea.Neutralization (New)/.idea/.name
-.idea/.idea.Neutralization (New)/.idea/workspace.xml
-/.idea
-/Assets/Models
-/Assets/Plugins/UniTask.meta
